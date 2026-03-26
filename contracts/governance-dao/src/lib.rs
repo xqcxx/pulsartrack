@@ -340,7 +340,7 @@ impl GovernanceDaoContract {
             soroban_sdk::vec![&env],
         );
 
-        let total_votes = proposal.votes_for + proposal.votes_against + proposal.votes_abstain;
+        let total_votes = proposal.votes_for + proposal.votes_against;
 
         let quorum_met = (total_votes * 10_000) >= (total_supply * (proposal.quorum_bps as i128));
 

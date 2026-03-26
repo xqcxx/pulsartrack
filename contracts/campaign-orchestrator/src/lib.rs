@@ -369,7 +369,20 @@ impl CampaignOrchestratorContract {
             panic!("daily view limit reached");
         }
 
-        // CEI: update state BEFORE external transfer
+        // Transfer payment to publisher
+        let token_addr: Address = env
+            .storage()
+            .instance()
+            .get(&DataKey::TokenAddress)
+            .unwrap();
+        let token_client = token::Client::new(&env, &token_addr);
+        token_client.transfer(
+            &env.current_contract_address(),
+            &publisher,
+            &campaign.cost_per_view,
+        );
+
+        // Update campaign
         campaign.remaining_budget -= campaign.cost_per_view;
         campaign.current_views += 1;
         campaign.last_updated = env.ledger().timestamp();
@@ -392,19 +405,6 @@ impl CampaignOrchestratorContract {
             &daily_key,
             DAILY_VIEWS_LIFETIME_THRESHOLD,
             DAILY_VIEWS_BUMP_AMOUNT,
-        );
-
-        // External interaction LAST
-        let token_addr: Address = env
-            .storage()
-            .instance()
-            .get(&DataKey::TokenAddress)
-            .unwrap();
-        let token_client = token::Client::new(&env, &token_addr);
-        token_client.transfer(
-            &env.current_contract_address(),
-            &publisher,
-            &campaign.cost_per_view,
         );
 
         // Update publisher earnings

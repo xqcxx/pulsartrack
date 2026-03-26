@@ -223,7 +223,10 @@ impl RewardsDistributorContract {
             panic!("no vested rewards available to claim");
         }
 
-        // --- CEI: Effects before Interactions ---
+        let token: Address = env.storage().instance().get(&DataKey::RewardToken).unwrap();
+        let token_client = token::Client::new(&env, &token);
+        token_client.transfer(&env.current_contract_address(), &user, &claimable);
+
         rewards.total_claimed += claimable;
         env.storage().persistent().set(&key, &rewards);
         env.storage().persistent().extend_ttl(
@@ -231,11 +234,6 @@ impl RewardsDistributorContract {
             PERSISTENT_LIFETIME_THRESHOLD,
             PERSISTENT_BUMP_AMOUNT,
         );
-
-        // External interaction LAST
-        let token: Address = env.storage().instance().get(&DataKey::RewardToken).unwrap();
-        let token_client = token::Client::new(&env, &token);
-        token_client.transfer(&env.current_contract_address(), &user, &claimable);
 
         env.events().publish(
             (symbol_short!("rewards"), symbol_short!("claimed")),
