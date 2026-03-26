@@ -34,7 +34,7 @@
           "function": {
             "contract_fn": {
               "contract_address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHK3M",
-              "function_name": "create_milestone",
+              "function_name": "record_impression",
               "args": [
                 {
                   "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAITA4"
@@ -43,47 +43,10 @@
                   "u64": 1
                 },
                 {
-                  "string": "1000 views"
-                },
-                {
-                  "string": "views"
-                },
-                {
-                  "u64": 1000
-                },
-                {
                   "i128": {
                     "hi": 0,
-                    "lo": 50000
+                    "lo": 100
                   }
-                },
-                {
-                  "u64": 3600
-                }
-              ]
-            }
-          },
-          "sub_invocations": []
-        }
-      ]
-    ],
-    [
-      [
-        "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFCT4",
-        {
-          "function": {
-            "contract_fn": {
-              "contract_address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHK3M",
-              "function_name": "update_progress",
-              "args": [
-                {
-                  "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFCT4"
-                },
-                {
-                  "u64": 1
-                },
-                {
-                  "u64": 500
                 }
               ]
             }
@@ -97,7 +60,7 @@
   "ledger": {
     "protocol_version": 22,
     "sequence_number": 0,
-    "timestamp": 3601,
+    "timestamp": 0,
     "network_id": "0000000000000000000000000000000000000000000000000000000000000000",
     "base_reserve": 0,
     "min_persistent_entry_ttl": 4096,
@@ -140,44 +103,11 @@
       [
         {
           "contract_data": {
-            "contract": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFCT4",
-            "key": {
-              "ledger_key_nonce": {
-                "nonce": 1033654523790656264
-              }
-            },
-            "durability": "temporary"
-          }
-        },
-        [
-          {
-            "last_modified_ledger_seq": 0,
-            "data": {
-              "contract_data": {
-                "ext": "v0",
-                "contract": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFCT4",
-                "key": {
-                  "ledger_key_nonce": {
-                    "nonce": 1033654523790656264
-                  }
-                },
-                "durability": "temporary",
-                "val": "void"
-              }
-            },
-            "ext": "v0"
-          },
-          6311999
-        ]
-      ],
-      [
-        {
-          "contract_data": {
             "contract": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHK3M",
             "key": {
               "vec": [
                 {
-                  "symbol": "CampaignMilestoneCount"
+                  "symbol": "CampaignAnalytics"
                 },
                 {
                   "u64": 1
@@ -197,52 +127,7 @@
                 "key": {
                   "vec": [
                     {
-                      "symbol": "CampaignMilestoneCount"
-                    },
-                    {
-                      "u64": 1
-                    }
-                  ]
-                },
-                "durability": "persistent",
-                "val": {
-                  "u64": 1
-                }
-              }
-            },
-            "ext": "v0"
-          },
-          1051200
-        ]
-      ],
-      [
-        {
-          "contract_data": {
-            "contract": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHK3M",
-            "key": {
-              "vec": [
-                {
-                  "symbol": "Milestone"
-                },
-                {
-                  "u64": 1
-                }
-              ]
-            },
-            "durability": "persistent"
-          }
-        },
-        [
-          {
-            "last_modified_ledger_seq": 0,
-            "data": {
-              "contract_data": {
-                "ext": "v0",
-                "contract": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHK3M",
-                "key": {
-                  "vec": [
-                    {
-                      "symbol": "Milestone"
+                      "symbol": "CampaignAnalytics"
                     },
                     {
                       "u64": 1
@@ -254,12 +139,6 @@
                   "map": [
                     {
                       "key": {
-                        "symbol": "achieved_at"
-                      },
-                      "val": "void"
-                    },
-                    {
-                      "key": {
                         "symbol": "campaign_id"
                       },
                       "val": {
@@ -268,7 +147,34 @@
                     },
                     {
                       "key": {
-                        "symbol": "created_at"
+                        "symbol": "cpm"
+                      },
+                      "val": {
+                        "i128": {
+                          "hi": 0,
+                          "lo": 100000
+                        }
+                      }
+                    },
+                    {
+                      "key": {
+                        "symbol": "ctr"
+                      },
+                      "val": {
+                        "u32": 0
+                      }
+                    },
+                    {
+                      "key": {
+                        "symbol": "cvr"
+                      },
+                      "val": {
+                        "u32": 0
+                      }
+                    },
+                    {
+                      "key": {
+                        "symbol": "last_updated"
                       },
                       "val": {
                         "u64": 0
@@ -276,31 +182,23 @@
                     },
                     {
                       "key": {
-                        "symbol": "current_value"
+                        "symbol": "total_clicks"
                       },
                       "val": {
-                        "u64": 500
+                        "u64": 0
                       }
                     },
                     {
                       "key": {
-                        "symbol": "deadline"
+                        "symbol": "total_conversions"
                       },
                       "val": {
-                        "u64": 3600
+                        "u64": 0
                       }
                     },
                     {
                       "key": {
-                        "symbol": "description"
-                      },
-                      "val": {
-                        "string": "1000 views"
-                      }
-                    },
-                    {
-                      "key": {
-                        "symbol": "milestone_id"
+                        "symbol": "total_impressions"
                       },
                       "val": {
                         "u64": 1
@@ -308,41 +206,21 @@
                     },
                     {
                       "key": {
-                        "symbol": "reward_amount"
+                        "symbol": "total_spend"
                       },
                       "val": {
                         "i128": {
                           "hi": 0,
-                          "lo": 50000
+                          "lo": 100
                         }
                       }
                     },
                     {
                       "key": {
-                        "symbol": "status"
+                        "symbol": "unique_viewers"
                       },
                       "val": {
-                        "vec": [
-                          {
-                            "symbol": "Missed"
-                          }
-                        ]
-                      }
-                    },
-                    {
-                      "key": {
-                        "symbol": "target_metric"
-                      },
-                      "val": {
-                        "string": "views"
-                      }
-                    },
-                    {
-                      "key": {
-                        "symbol": "target_value"
-                      },
-                      "val": {
-                        "u64": 1000
+                        "u64": 0
                       }
                     }
                   ]
@@ -352,6 +230,93 @@
             "ext": "v0"
           },
           1051200
+        ]
+      ],
+      [
+        {
+          "contract_data": {
+            "contract": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHK3M",
+            "key": {
+              "vec": [
+                {
+                  "symbol": "HourlyStats"
+                },
+                {
+                  "u64": 1
+                },
+                {
+                  "u64": 0
+                }
+              ]
+            },
+            "durability": "temporary"
+          }
+        },
+        [
+          {
+            "last_modified_ledger_seq": 0,
+            "data": {
+              "contract_data": {
+                "ext": "v0",
+                "contract": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHK3M",
+                "key": {
+                  "vec": [
+                    {
+                      "symbol": "HourlyStats"
+                    },
+                    {
+                      "u64": 1
+                    },
+                    {
+                      "u64": 0
+                    }
+                  ]
+                },
+                "durability": "temporary",
+                "val": {
+                  "map": [
+                    {
+                      "key": {
+                        "symbol": "clicks"
+                      },
+                      "val": {
+                        "u64": 0
+                      }
+                    },
+                    {
+                      "key": {
+                        "symbol": "impressions"
+                      },
+                      "val": {
+                        "u64": 1
+                      }
+                    },
+                    {
+                      "key": {
+                        "symbol": "spend"
+                      },
+                      "val": {
+                        "i128": {
+                          "hi": 0,
+                          "lo": 100
+                        }
+                      }
+                    },
+                    {
+                      "key": {
+                        "symbol": "timestamp"
+                      },
+                      "val": {
+                        "u64": 0
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "ext": "v0"
+          },
+          15
         ]
       ],
       [
@@ -393,12 +358,56 @@
                         "key": {
                           "vec": [
                             {
-                              "symbol": "MilestoneCounter"
+                              "symbol": "GlobalStats"
                             }
                           ]
                         },
                         "val": {
-                          "u64": 1
+                          "map": [
+                            {
+                              "key": {
+                                "symbol": "last_updated"
+                              },
+                              "val": {
+                                "u64": 0
+                              }
+                            },
+                            {
+                              "key": {
+                                "symbol": "total_campaigns"
+                              },
+                              "val": {
+                                "u64": 0
+                              }
+                            },
+                            {
+                              "key": {
+                                "symbol": "total_clicks"
+                              },
+                              "val": {
+                                "u64": 0
+                              }
+                            },
+                            {
+                              "key": {
+                                "symbol": "total_impressions"
+                              },
+                              "val": {
+                                "u64": 1
+                              }
+                            },
+                            {
+                              "key": {
+                                "symbol": "total_spend"
+                              },
+                              "val": {
+                                "i128": {
+                                  "hi": 0,
+                                  "lo": 100
+                                }
+                              }
+                            }
+                          ]
                         }
                       },
                       {
