@@ -127,7 +127,7 @@ export function BidForm({ auction, campaignId, onSuccess, onCancel }: BidFormPro
         <div className="flex gap-3">
           <button
             type="submit"
-            disabled={!isValid || isPending}
+            disabled={isPending}
             className="flex-1 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium py-2 px-4 rounded-lg transition-colors text-sm"
           >
             {isPending ? 'Submitting...' : 'Submit Bid'}

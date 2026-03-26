@@ -283,7 +283,7 @@ export function CampaignForm({ onSuccess, onCancel }: CampaignFormProps) {
       <div className="flex gap-3 pt-2">
         <button
           type="submit"
-          disabled={!isValid || isPending}
+          disabled={isPending}
           className="flex-1 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium py-2 px-4 rounded-lg transition-colors text-sm"
         >
           {isPending ? "Creating..." : "Create Campaign"}
