@@ -14,7 +14,7 @@ import {
   configureRateLimiters,
 } from "./middleware/auth";
 import { setupWebSocketServer } from "./services/websocket-server";
-import { checkDbConnection } from "./config/database";
+import pool, { checkDbConnection } from "./config/database";
 import { validateContractIds } from "./config/stellar";
 import prisma from "./db/prisma";
 import redisClient from "./config/redis";
@@ -68,6 +68,28 @@ const server = createServer(app);
 // Attach WebSocket server
 setupWebSocketServer(server);
 
+async function shutdown(code: number) {
+  logger.info(`[System] Shutting down with code ${code}...`);
+  try {
+    // Wait for the HTTP server to finish ongoing requests
+    await new Promise<void>((resolve) => {
+      server.close(() => resolve());
+    });
+    
+    // Cleanup DB and Redis
+    await prisma.$disconnect();
+    await pool.end();
+    await redisClient.quit();
+  } catch (err) {
+    logger.error({ err }, "[System] Error during shutdown cleanup");
+  }
+  process.exit(code);
+}
+
+// Ensure the application shuts down gracefully on OS signals
+process.on("SIGTERM", () => shutdown(0));
+process.on("SIGINT", () => shutdown(0));
+
 // Start server
 async function start() {
   // Validate contract IDs — throws in production, warns in development
@@ -80,7 +102,7 @@ async function start() {
       logger.fatal(
         "[DB] PostgreSQL connection failed — aborting in production",
       );
-      process.exit(1);
+      await shutdown(1);
     }
     logger.warn("[DB] Could not connect to PostgreSQL — running without DB");
   } else {
@@ -94,7 +116,7 @@ async function start() {
   } catch (err) {
     if (process.env.NODE_ENV === "production") {
       logger.fatal("[DB] Prisma connection failed — aborting in production");
-      process.exit(1);
+      await shutdown(1);
     }
     logger.warn("[DB] Prisma client unavailable — running without ORM");
   }
@@ -109,9 +131,9 @@ async function start() {
 }
 
 if (process.env.NODE_ENV !== 'test') {
-  start().catch((err) => {
+  start().catch(async (err) => {
     console.error('Failed to start server:', err);
-    process.exit(1);
+    await shutdown(1);
   });
 }
 
