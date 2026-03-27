@@ -1,15 +1,12 @@
 import { Router, Request, Response } from "express";
-import {
-  getAccountDetails,
-  getAccountTransactions,
-  getFeeStats,
-} from "../services/horizon";
+import { getFeeStats } from "../services/horizon";
 import { stellarConfig, CONTRACT_IDS } from "../config/stellar";
 import { requireAuth } from "../middleware/auth";
 import campaignRoutes from "../routes/campaigns";
 import publisherRoutes from "../routes/publishers";
 import auctionRoutes from "../routes/auctions";
-import analyticsRoutes from "../routes/analytics";
+import governanceRoutes from "../routes/governance";
+import accountRoutes from "../routes/accounts";
 
 const router = Router();
 
@@ -98,9 +95,10 @@ router.get("/contracts", requireAuth, (_req: Request, res: Response) => {
 });
 
 // Domain routes
+router.use("/account", accountRoutes);
 router.use("/campaigns", campaignRoutes);
 router.use("/publishers", publisherRoutes);
 router.use("/auctions", auctionRoutes);
-router.use("/governance", analyticsRoutes);
+router.use("/governance", governanceRoutes);
 
 export default router;

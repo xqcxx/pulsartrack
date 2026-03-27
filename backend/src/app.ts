@@ -8,6 +8,10 @@ import apiRoutes from './api/routes';
 import { errorHandler, rateLimit, configureRateLimiters } from './middleware/auth';
 
 const app = express();
+const RESPONSE_TIMEOUT_MS = Number.parseInt(
+    process.env.EXPRESS_RESPONSE_TIMEOUT_MS || '30000',
+    10,
+);
 
 // Redis connection for rate limiting
 const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
@@ -36,6 +40,15 @@ if (process.env.NODE_ENV !== 'test') {
 }
 
 app.use(express.json({ limit: '10mb' }));
+app.use((req, res, next) => {
+    req.setTimeout(RESPONSE_TIMEOUT_MS);
+    res.setTimeout(RESPONSE_TIMEOUT_MS, () => {
+        if (!res.headersSent) {
+            res.status(504).json({ error: 'Gateway timeout' });
+        }
+    });
+    next();
+});
 app.use(rateLimit());
 
 // API routes

@@ -260,16 +260,8 @@ impl FraudPreventionContract {
             .unwrap_or(100);
 
         if activity.suspicious_views > threshold {
+            Self::_suspend_in_publisher_network(&env, &publisher);
             activity.suspended = true;
-            // Cross-contract call to suspend publisher
-            if let Some(network_addr) = env
-                .storage()
-                .instance()
-                .get::<DataKey, Address>(&DataKey::PublisherNetwork)
-            {
-                let network_client = mocks::PublisherNetworkContractClient::new(&env, &network_addr);
-                network_client.suspend_publisher(&env.current_contract_address(), &publisher);
-            }
         }
 
         env.storage().persistent().set(&key, &activity);
@@ -318,6 +310,7 @@ impl FraudPreventionContract {
                     suspended: false,
                 });
 
+        Self::_suspend_in_publisher_network(&env, &publisher);
         activity.suspended = true;
         env.storage().persistent().set(&key, &activity);
         env.storage().persistent().extend_ttl(
@@ -325,15 +318,6 @@ impl FraudPreventionContract {
             PERSISTENT_LIFETIME_THRESHOLD,
             PERSISTENT_BUMP_AMOUNT,
         );
-
-        if let Some(network_addr) = env
-            .storage()
-            .instance()
-            .get::<DataKey, Address>(&DataKey::PublisherNetwork)
-        {
-            let network_client = mocks::PublisherNetworkContractClient::new(&env, &network_addr);
-            network_client.suspend_publisher(&env.current_contract_address(), &publisher);
-        }
     }
 
     pub fn set_threshold(env: Env, admin: Address, threshold: u32) {
@@ -431,6 +415,16 @@ impl FraudPreventionContract {
         if !is_oracle {
             panic!("unauthorized - only admin or oracle can flag publishers");
         }
+    }
+
+    fn _suspend_in_publisher_network(env: &Env, publisher: &Address) {
+        let network_addr: Address = env
+            .storage()
+            .instance()
+            .get(&DataKey::PublisherNetwork)
+            .expect("publisher network contract not configured");
+        let network_client = mocks::PublisherNetworkContractClient::new(env, &network_addr);
+        network_client.suspend_publisher(&env.current_contract_address(), publisher);
     }
 
     fn _calculate_score(

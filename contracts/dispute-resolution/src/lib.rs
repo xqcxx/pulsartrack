@@ -327,7 +327,10 @@ impl DisputeResolutionContract {
                         );
                     }
                 }
-                DisputeOutcome::NoAction | DisputeOutcome::Pending => {}
+                DisputeOutcome::NoAction => {
+                    token_client.transfer(&env.current_contract_address(), &dispute.claimant, &fee);
+                }
+                DisputeOutcome::Pending => {}
             }
         }
 

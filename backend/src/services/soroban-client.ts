@@ -8,13 +8,16 @@ import {
   xdr,
   Address,
 } from "@stellar/stellar-sdk";
-import { stellarConfig } from "../config/stellar";
+import { STELLAR_REQUEST_TIMEOUT_MS, stellarConfig } from "../config/stellar";
 
 const SIMULATION_ACCOUNT =
   "GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN";
 
 export function getServer(): rpc.Server {
-  return new rpc.Server(stellarConfig.sorobanRpcUrl, { allowHttp: false });
+  return new rpc.Server(stellarConfig.sorobanRpcUrl, {
+    allowHttp: false,
+    timeout: STELLAR_REQUEST_TIMEOUT_MS,
+  });
 }
 
 /**

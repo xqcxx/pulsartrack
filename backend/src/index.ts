@@ -21,6 +21,10 @@ import redisClient from "./config/redis";
 
 const app = express();
 const PORT = parseInt(process.env.PORT || "4000", 10);
+const RESPONSE_TIMEOUT_MS = Number.parseInt(
+  process.env.EXPRESS_RESPONSE_TIMEOUT_MS || "30000",
+  10,
+);
 
 // Trust proxy when behind reverse proxy/load balancer (nginx, Cloudflare, AWS ALB)
 // This ensures req.ip returns the real client IP from X-Forwarded-For header
@@ -49,6 +53,15 @@ app.use(
 );
 
 app.use(express.json({ limit: "10mb" }));
+app.use((req, res, next) => {
+  req.setTimeout(RESPONSE_TIMEOUT_MS);
+  res.setTimeout(RESPONSE_TIMEOUT_MS, () => {
+    if (!res.headersSent) {
+      res.status(504).json({ error: "Gateway timeout" });
+    }
+  });
+  next();
+});
 app.use(rateLimit());
 
 // API routes

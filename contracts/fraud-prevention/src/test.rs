@@ -237,10 +237,27 @@ fn test_suspend_publisher_admin() {
     env.mock_all_auths();
     let (client, admin) = setup(&env);
 
+    let lifecycle = Address::generate(&env);
+    let network_id = env.register_contract(None, mocks::PublisherNetworkContract);
+    let network = Address::from_contract_id(&env, &network_id);
+    let vault = Address::generate(&env);
     let publisher = Address::generate(&env);
+
+    client.set_dependent_contracts(&admin, &lifecycle, &network, &vault);
     client.suspend_publisher(&admin, &publisher);
 
     assert!(client.is_publisher_suspended(&publisher));
+}
+
+#[test]
+#[should_panic(expected = "publisher network contract not configured")]
+fn test_suspend_publisher_without_network_config_fails() {
+    let env = Env::default();
+    env.mock_all_auths();
+    let (client, admin) = setup(&env);
+    let publisher = Address::generate(&env);
+
+    client.suspend_publisher(&admin, &publisher);
 }
 
 #[test]

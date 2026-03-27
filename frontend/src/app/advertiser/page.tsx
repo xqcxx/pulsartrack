@@ -45,6 +45,7 @@ export default function AdvertiserPage() {
 
   const [form, setForm] = useState<CampaignForm>(EMPTY_FORM);
   const [activeTab, setActiveTab] = useState<'campaigns' | 'create' | 'analytics'>('campaigns');
+  const errors: Record<string, string[]> = {};
 
   if (!isConnected) {
     return (
@@ -70,10 +71,14 @@ export default function AdvertiserPage() {
     e.preventDefault();
     createCampaign({
       title: form.title,
-      budgetXlm: parseFloat(form.budgetXlm) || 0,
-      dailyBudgetXlm: parseFloat(form.dailyBudgetXlm) || 0,
-      durationDays: parseInt(form.durationDays) || 30,
       contentId: form.contentId,
+      campaignType: 0,
+      budgetXlm: parseFloat(form.budgetXlm) || 0,
+      costPerViewXlm: parseFloat(form.dailyBudgetXlm) || 0,
+      durationDays: parseInt(form.durationDays) || 30,
+      targetViews: 0,
+      dailyViewLimit: 0,
+      refundable: false,
     });
   };
 

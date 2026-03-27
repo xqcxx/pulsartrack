@@ -214,7 +214,7 @@ impl PerformanceOracleContract {
             .get(&DataKey::MinAttesters)
             .unwrap_or(3);
 
-        if total_attesters < min_attesters {
+        if total_attesters == 0 || total_attesters < min_attesters {
             return;
         }
 
@@ -237,17 +237,19 @@ impl PerformanceOracleContract {
                 .get(&DataKey::Attestation(campaign_id, attester))
                 .expect("attestation not found");
 
-            sum_impressions += attestation.impressions_verified;
-            sum_clicks += attestation.clicks_verified;
-            sum_fraud_rate += attestation.fraud_rate as u64;
-            sum_quality_score += attestation.quality_score as u64;
+            sum_impressions = sum_impressions.saturating_add(attestation.impressions_verified);
+            sum_clicks = sum_clicks.saturating_add(attestation.clicks_verified);
+            sum_fraud_rate = sum_fraud_rate.saturating_add(attestation.fraud_rate as u64);
+            sum_quality_score = sum_quality_score.saturating_add(attestation.quality_score as u64);
         }
 
         // Calculate averages
-        let avg_impressions = sum_impressions / (total_attesters as u64);
-        let avg_clicks = sum_clicks / (total_attesters as u64);
-        let avg_fraud_rate = (sum_fraud_rate / (total_attesters as u64)) as u32;
-        let avg_quality_score = (sum_quality_score / (total_attesters as u64)) as u32;
+        let total_attesters_u64 = total_attesters as u64;
+        let avg_impressions = sum_impressions / total_attesters_u64;
+        let avg_clicks = sum_clicks / total_attesters_u64;
+        let avg_fraud_rate = (sum_fraud_rate / total_attesters_u64).min(u32::MAX as u64) as u32;
+        let avg_quality_score =
+            (sum_quality_score / total_attesters_u64).min(u32::MAX as u64) as u32;
 
         let consensus = OracleConsensus {
             campaign_id,

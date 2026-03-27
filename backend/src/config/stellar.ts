@@ -15,11 +15,17 @@ const SOROBAN_RPC_URL =
 const NETWORK_PASSPHRASE =
   NETWORK === 'mainnet' ? Networks.PUBLIC : Networks.TESTNET;
 
+export const STELLAR_REQUEST_TIMEOUT_MS = Number.parseInt(
+  process.env.STELLAR_REQUEST_TIMEOUT_MS || '15000',
+  10,
+);
+
 export const stellarConfig = {
   network: NETWORK,
   horizonUrl: HORIZON_URL,
   sorobanRpcUrl: SOROBAN_RPC_URL,
   networkPassphrase: NETWORK_PASSPHRASE,
+  requestTimeoutMs: STELLAR_REQUEST_TIMEOUT_MS,
 };
 
 export function getHorizonServer(): Horizon.Server {
