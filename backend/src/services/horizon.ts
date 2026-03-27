@@ -1,12 +1,18 @@
 import { Horizon } from '@stellar/stellar-sdk';
-import { getHorizonServer } from '../config/stellar';
+import { getHorizonServer, STELLAR_REQUEST_TIMEOUT_MS } from '../config/stellar';
 import { logger } from '../lib/logger';
+
+export function createHorizonServer(): Horizon.Server {
+  const server = getHorizonServer();
+  server.httpClient.defaults.timeout = STELLAR_REQUEST_TIMEOUT_MS;
+  return server;
+}
 
 /**
  * Fetch account details from Horizon
  */
 export async function getAccountDetails(address: string) {
-  const server = getHorizonServer();
+  const server = createHorizonServer();
   try {
     const account = await server.loadAccount(address);
     const xlmBalance = account.balances.find((b: any) => b.asset_type === 'native');
@@ -28,7 +34,7 @@ export async function getAccountDetails(address: string) {
  * Get recent transactions for an account
  */
 export async function getAccountTransactions(address: string, limit = 20) {
-  const server = getHorizonServer();
+  const server = createHorizonServer();
   const result = await server
     .transactions()
     .forAccount(address)
@@ -45,7 +51,7 @@ export function streamLedgers(
   onLedger: (ledger: any) => void,
   onError?: (err: any) => void
 ): () => void {
-  const server = getHorizonServer();
+  const server = createHorizonServer();
   const es = server
     .ledgers()
     .cursor('now')
@@ -61,7 +67,7 @@ export function streamLedgers(
  * Get Stellar network fee stats
  */
 export async function getFeeStats() {
-  const server = getHorizonServer();
+  const server = createHorizonServer();
   return server.feeStats();
 }
 
@@ -69,7 +75,7 @@ export async function getFeeStats() {
  * Get operations for a contract account
  */
 export async function getContractOperations(contractId: string, limit = 50) {
-  const server = getHorizonServer();
+  const server = createHorizonServer();
   try {
     const result = await server
       .operations()

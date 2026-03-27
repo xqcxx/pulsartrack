@@ -1,6 +1,6 @@
 import { checkDbConnection } from "../config/database";
 import redisClient from "../config/redis";
-import { getHorizonServer } from "../config/stellar";
+import { createHorizonServer } from "./horizon";
 import { getServer } from "./soroban-client";
 import { logger } from "../lib/logger";
 
@@ -31,7 +31,7 @@ export async function checkRedis(): Promise<"ok" | "error"> {
 
 export async function checkHorizon(): Promise<"ok" | "error"> {
   try {
-    const server = getHorizonServer();
+    const server = createHorizonServer();
     await server.feeStats();
     return "ok";
   } catch {
