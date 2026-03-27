@@ -87,7 +87,17 @@ deploy_contract() {
 
   # Check if already deployed
   local EXISTING_ID
-  EXISTING_ID=$(python3 -c "import json; d=json.load(open('$DEPLOY_FILE')); print(d['contracts'].get('$NAME',''))" 2>/dev/null || echo "")
+  EXISTING_ID=$(
+    python3 -c '
+import json
+import sys
+
+deploy_file, name = sys.argv[1], sys.argv[2]
+with open(deploy_file, encoding="utf-8") as f:
+    data = json.load(f)
+print(data["contracts"].get(name, ""))
+' "$DEPLOY_FILE" "$NAME" 2>/dev/null || echo ""
+  )
 
   if [ -n "$EXISTING_ID" ] && [ "$FORCE" = false ]; then
     echo "[Skip] $NAME already deployed: $EXISTING_ID"
@@ -118,14 +128,18 @@ deploy_contract() {
   echo "  -> $CONTRACT_ID"
 
   # Update deploy file
-  python3 -c "
+  python3 -c '
 import json
-with open('$DEPLOY_FILE') as f:
-    d = json.load(f)
-d['contracts']['$NAME'] = '$CONTRACT_ID'
-with open('$DEPLOY_FILE', 'w') as f:
-    json.dump(d, f, indent=2)
-"
+import sys
+
+name, contract_id, deploy_file = sys.argv[1], sys.argv[2], sys.argv[3]
+with open(deploy_file, encoding="utf-8") as f:
+    data = json.load(f)
+data["contracts"][name] = contract_id
+with open(deploy_file, "w", encoding="utf-8") as f:
+    json.dump(data, f, indent=2)
+    f.write("\n")
+' "$NAME" "$CONTRACT_ID" "$DEPLOY_FILE"
 }
 
 # Core contracts
