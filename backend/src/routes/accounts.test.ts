@@ -50,6 +50,5 @@ describe('GET /api/account/:address', () => {
         expect(response.status).toBe(500);
         expect(response.body).toHaveProperty('error', 'Failed to fetch account details');
         expect(response.body).not.toHaveProperty('details');
-        expect(response.body).toHaveProperty('error', errorMsg);
     });
 });
