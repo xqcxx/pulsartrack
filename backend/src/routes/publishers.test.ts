@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import request from 'supertest';
 import app from '../app';
 import pool from '../config/database';
@@ -8,9 +8,13 @@ describe('Publisher Routes', () => {
     const mockAddress = 'GD7V7Z5K64I6U6I7U6I7U6I7U6I7U6I7U6I7U6I7U6I7U6I7U6I7';
     const token = generateTestToken(mockAddress);
 
+    beforeEach(() => {
+        vi.clearAllMocks();
+    });
+
     describe('GET /api/publishers/leaderboard', () => {
         it('should return publisher leaderboard', async () => {
-            (pool.query as any).mockResolvedValue({
+            (pool.query as any).mockResolvedValueOnce({
                 rows: [
                     {
                         address: mockAddress,
@@ -39,7 +43,7 @@ describe('Publisher Routes', () => {
                 website: 'https://newpub.com'
             };
 
-            (pool.query as any).mockResolvedValue({
+            (pool.query as any).mockResolvedValueOnce({
                 rows: [{
                     id: 'pub-uuid',
                     address: mockAddress,

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import request from 'supertest';
 import app from '../app';
 import pool from '../config/database';
@@ -7,6 +7,10 @@ import { generateTestToken } from '../test-utils';
 describe('Auction Routes', () => {
     const mockAddress = 'GB7V7Z5K64I6U6I7U6I7U6I7U6I7U6I7U6I7U6I7U6I7U6I7U6I7';
     const token = generateTestToken(mockAddress);
+
+    beforeEach(() => {
+        vi.clearAllMocks();
+    });
 
     describe('GET /api/auctions', () => {
         it('should return a list of auctions', async () => {
@@ -40,15 +44,19 @@ describe('Auction Routes', () => {
                 amountStroops: 150
             };
 
-            (pool.query as any).mockResolvedValue({
-                rows: [{
-                    id: 'bid-uuid',
-                    auction_id: 1,
-                    bidder: mockAddress,
-                    campaign_id: bidData.campaignId,
-                    amount_stroops: bidData.amountStroops
-                }]
-            });
+            const insertRow = {
+                id: 'bid-uuid',
+                auction_id: 1,
+                bidder: mockAddress,
+                campaign_id: bidData.campaignId,
+                amount_stroops: bidData.amountStroops
+            };
+
+            // First call: INSERT returning the new bid row
+            // Second call: UPDATE bid_count (returns rowCount only)
+            (pool.query as any)
+                .mockResolvedValueOnce({ rows: [insertRow] })
+                .mockResolvedValueOnce({ rows: [], rowCount: 1 });
 
             const response = await request(app)
                 .post('/api/auctions/1/bid')
