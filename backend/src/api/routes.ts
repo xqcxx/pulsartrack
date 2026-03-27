@@ -4,7 +4,7 @@ import { stellarConfig, CONTRACT_IDS } from "../config/stellar";
 import campaignRoutes from "../routes/campaigns";
 import publisherRoutes from "../routes/publishers";
 import auctionRoutes from "../routes/auctions";
-import analyticsRoutes from "../routes/analytics";
+import governanceRoutes from "../routes/governance";
 import accountRoutes from "../routes/accounts";
 
 const router = Router();
