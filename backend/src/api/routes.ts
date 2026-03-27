@@ -8,7 +8,7 @@ import { stellarConfig, CONTRACT_IDS } from "../config/stellar";
 import campaignRoutes from "../routes/campaigns";
 import publisherRoutes from "../routes/publishers";
 import auctionRoutes from "../routes/auctions";
-import analyticsRoutes from "../routes/analytics";
+import governanceRoutes from "../routes/governance";
 
 const router = Router();
 
@@ -100,6 +100,6 @@ router.get("/contracts", (_req: Request, res: Response) => {
 router.use("/campaigns", campaignRoutes);
 router.use("/publishers", publisherRoutes);
 router.use("/auctions", auctionRoutes);
-router.use("/governance", analyticsRoutes);
+router.use("/governance", governanceRoutes);
 
 export default router;
