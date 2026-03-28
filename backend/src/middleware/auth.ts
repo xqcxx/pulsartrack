@@ -82,7 +82,7 @@ export function requireAuth(
 
   try {
     const payload = decodeJwt(authHeader.slice(7));
-    (req as any).stellarAddress = payload.sub;
+    req.stellarAddress = payload.sub;
     next();
   } catch (err: any) {
     res.status(401).json({ error: err.message });
@@ -141,7 +141,7 @@ export function rateLimit() {
       return;
     }
 
-    const address = (req as any).stellarAddress;
+    const address = req.stellarAddress;
     if (address) {
       try {
         await accountLimiter.consume(address);
@@ -161,7 +161,7 @@ export function rateLimitWrite() {
     res: Response,
     next: NextFunction,
   ): Promise<void> => {
-    const address = (req as any).stellarAddress;
+    const address = req.stellarAddress;
     if (!address) {
       next();
       return;

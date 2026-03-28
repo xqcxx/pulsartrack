@@ -65,7 +65,7 @@ router.post('/register', requireAuth, validate({
   },
 }), async (req: Request, res: Response) => {
   try {
-    const address = (req as any).stellarAddress;
+    const address = req.stellarAddress;
     const { displayName, website } = req.body;
 
     // Check if the address is already registered

@@ -56,7 +56,7 @@ router.post('/', requireAuth, validate({
   },
 }), async (req: Request, res: Response) => {
   try {
-    const address = (req as any).stellarAddress;
+    const address = req.stellarAddress;
     const { title, contentId, budgetStroops, dailyBudgetStroops } = req.body;
 
     const { rows } = await pool.query(

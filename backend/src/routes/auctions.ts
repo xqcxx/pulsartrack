@@ -91,7 +91,7 @@ router.post(
   async (req: Request, res: Response) => {
     const client = await pool.connect();
     try {
-      const address = (req as any).stellarAddress;
+      const address = req.stellarAddress;
       const auctionId = parseInt(req.params.auctionId as string);
       const { campaignId, amountStroops } = req.body;
 
