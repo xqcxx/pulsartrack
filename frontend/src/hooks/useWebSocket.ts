@@ -21,8 +21,9 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
     // Subscribe to connected event
     const unsubConnected = ws.on('connected', () => setIsConnected(true));
     const unsubError = ws.on('error', () => setIsConnected(false));
+    const unsubDisconnected = ws.on('disconnected', () => setIsConnected(false));
 
-    unsubscribeRefs.current.push(unsubConnected, unsubError);
+    unsubscribeRefs.current.push(unsubConnected, unsubError, unsubDisconnected);
 
     // Subscribe to specified events or all
     const eventTypes: Array<EventType | 'all'> = events ? events : ['all'];

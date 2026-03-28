@@ -25,8 +25,25 @@ router.get('/:address/transactions', async (req: Request, res: Response) => {
   try {
     const address = req.params.address as string;
     const limit = Math.min(parseInt(req.query.limit as string) || 20, 200);
-    const txs = await getAccountTransactions(address, limit);
-    res.json({ transactions: txs, count: txs.length });
+    const cursor = typeof req.query.cursor === 'string' ? req.query.cursor : undefined;
+    const order = req.query.order === 'asc' ? 'asc' : 'desc';
+
+    const result = await getAccountTransactions(address, limit, cursor, order);
+    const transactions = result.records;
+    const nextCursor =
+      transactions.length === limit
+        ? transactions[transactions.length - 1]?.paging_token ?? null
+        : null;
+
+    res.json({
+      transactions,
+      count: transactions.length,
+      cursor: {
+        current: cursor ?? null,
+        next: nextCursor,
+      },
+      order,
+    });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }

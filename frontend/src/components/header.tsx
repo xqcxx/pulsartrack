@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Menu, X, Zap, History, AlertTriangle } from "lucide-react";
+import { Menu, X, Zap, History, AlertTriangle, Moon, Sun, Monitor } from "lucide-react";
 import { useWalletStore } from "../store/wallet-store";
 import { useTransactionStore } from "../store/tx-store";
 import { WalletConnectButton } from "./wallet/WalletModal";
@@ -10,6 +10,7 @@ import { WalletBalance } from "./wallet/WalletBalance";
 import { TxHistory } from "./wallet/TxHistory";
 import { checkPendingTransactions } from "../lib/tx-recovery";
 import { useTxNotifications } from "../hooks/useTxNotifications";
+import { useThemeStore, ThemeMode } from "../store/theme-store";
 
 export function Header() {
   const { address, isConnected } = useWalletStore();
@@ -18,6 +19,15 @@ export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [txHistoryOpen, setTxHistoryOpen] = useState(false);
   const [pendingCount, setPendingCount] = useState(0);
+  const { theme, setTheme } = useThemeStore();
+
+  const cycleTheme = () => {
+    const order: ThemeMode[] = ["light", "dark", "system"];
+    const nextTheme = order[(order.indexOf(theme) + 1) % order.length];
+    setTheme(nextTheme);
+  };
+
+  const ThemeIcon = theme === "dark" ? Moon : theme === "light" ? Sun : Monitor;
 
   // Enable transaction notifications
   useTxNotifications();
@@ -56,7 +66,7 @@ export function Header() {
           </span>
         </div>
       )}
-      <header className="border-b border-gray-200 bg-white sticky top-0 z-40 backdrop-blur-sm bg-white/80">
+      <header className="border-b border-gray-200 dark:border-gray-800 bg-white sticky top-0 z-40 backdrop-blur-sm bg-white/80 dark:bg-gray-950/80">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             {/* Logo */}
@@ -65,7 +75,7 @@ export function Header() {
                 <div className="w-8 h-8 bg-gradient-to-br from-indigo-600 to-cyan-500 rounded-lg flex items-center justify-center">
                   <Zap className="w-5 h-5 text-white" />
                 </div>
-                <h1 className="text-2xl font-bold text-gray-900">
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                   PulsarTrack
                 </h1>
               </a>
@@ -74,25 +84,25 @@ export function Header() {
               <nav className="hidden md:flex items-center space-x-6">
                 <a
                   href="/"
-                  className="text-gray-700 hover:text-indigo-600 transition-colors font-medium"
+                  className="text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors font-medium"
                 >
                   Home
                 </a>
                 <a
                   href="/advertiser"
-                  className="text-gray-700 hover:text-indigo-600 transition-colors font-medium"
+                  className="text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors font-medium"
                 >
                   Advertiser
                 </a>
                 <a
                   href="/publisher"
-                  className="text-gray-700 hover:text-indigo-600 transition-colors font-medium"
+                  className="text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors font-medium"
                 >
                   Publisher
                 </a>
                 <a
                   href="/governance"
-                  className="text-gray-700 hover:text-indigo-600 transition-colors font-medium"
+                  className="text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors font-medium"
                 >
                   Governance
                 </a>
@@ -101,15 +111,23 @@ export function Header() {
 
             {/* Desktop Wallet Connection */}
             <div className="hidden md:flex items-center gap-3">
+              <button
+                onClick={cycleTheme}
+                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                aria-label={`Switch theme (current: ${theme})`}
+                title={`Theme: ${theme}`}
+              >
+                <ThemeIcon className="w-5 h-5 text-gray-700 dark:text-gray-300" />
+              </button>
               {isConnected && address ? (
                 <>
                   <WalletBalance />
                   <button
                     onClick={() => setTxHistoryOpen(true)}
-                    className="relative p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                    className="relative p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
                     aria-label="Transaction history"
                   >
-                    <History className="w-5 h-5 text-gray-700" />
+                    <History className="w-5 h-5 text-gray-700 dark:text-gray-300" />
                     {pendingCount > 0 && (
                       <span className="absolute -top-1 -right-1 w-5 h-5 bg-yellow-500 text-white text-xs rounded-full flex items-center justify-center font-medium">
                         {pendingCount}
@@ -126,21 +144,31 @@ export function Header() {
             {/* Mobile Menu Button */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              className="md:hidden p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
               aria-label="Toggle menu"
             >
               {mobileMenuOpen ? (
-                <X className="w-6 h-6 text-gray-700" />
+                <X className="w-6 h-6 text-gray-700 dark:text-gray-300" />
               ) : (
-                <Menu className="w-6 h-6 text-gray-700" />
+                <Menu className="w-6 h-6 text-gray-700 dark:text-gray-300" />
               )}
             </button>
           </div>
 
           {/* Mobile Menu */}
           {mobileMenuOpen && (
-            <div className="md:hidden border-t border-gray-200 py-4">
+            <div className="md:hidden border-t border-gray-200 dark:border-gray-800 py-4">
               <nav className="flex flex-col space-y-4">
+                <button
+                  onClick={cycleTheme}
+                  className="w-full flex items-center justify-between px-2 py-2 text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors font-medium"
+                >
+                  <span>Theme</span>
+                  <span className="flex items-center gap-2 capitalize">
+                    <ThemeIcon className="w-4 h-4" />
+                    {theme}
+                  </span>
+                </button>
                 {[
                   { href: "/", label: "Home" },
                   { href: "/advertiser", label: "Advertiser" },
@@ -150,14 +178,14 @@ export function Header() {
                   <a
                     key={href}
                     href={href}
-                    className="text-gray-700 hover:text-indigo-600 transition-colors font-medium px-2 py-1"
+                    className="text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors font-medium px-2 py-1"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     {label}
                   </a>
                 ))}
 
-                <div className="pt-4 border-t border-gray-200">
+                <div className="pt-4 border-t border-gray-200 dark:border-gray-800">
                   {isConnected && address ? (
                     <>
                       <button
@@ -165,7 +193,7 @@ export function Header() {
                           setTxHistoryOpen(true);
                           setMobileMenuOpen(false);
                         }}
-                        className="w-full flex items-center justify-between px-2 py-2 text-gray-700 hover:text-indigo-600 transition-colors font-medium mb-2"
+                        className="w-full flex items-center justify-between px-2 py-2 text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors font-medium mb-2"
                       >
                         <span className="flex items-center gap-2">
                           <History className="w-5 h-5" />

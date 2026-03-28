@@ -33,15 +33,24 @@ export async function getAccountDetails(address: string) {
 /**
  * Get recent transactions for an account
  */
-export async function getAccountTransactions(address: string, limit = 20) {
+export async function getAccountTransactions(
+  address: string,
+  limit = 20,
+  cursor?: string,
+  order: 'asc' | 'desc' = 'desc'
+) {
   const server = createHorizonServer();
-  const result = await server
+  let callBuilder = server
     .transactions()
     .forAccount(address)
     .limit(limit)
-    .order('desc')
-    .call();
-  return result.records;
+    .order(order);
+
+  if (cursor) {
+    callBuilder = callBuilder.cursor(cursor);
+  }
+
+  return callBuilder.call();
 }
 
 /**

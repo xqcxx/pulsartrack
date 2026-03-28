@@ -20,6 +20,8 @@ export type EventType =
   | 'consent_updated'
   | 'subscription_created'
   | 'reputation_updated'
+  | 'pong'
+  | 'disconnected'
   | 'connected'
   | 'error';
 
@@ -59,6 +61,10 @@ class PulsarWebSocket {
   private maxReconnectAttempts = 5;
   private reconnectAttempts = 0;
   private url: string;
+  private heartbeatInterval: ReturnType<typeof setInterval> | null = null;
+  private heartbeatTimeout: ReturnType<typeof setTimeout> | null = null;
+  private readonly heartbeatIntervalMs = 30000;
+  private readonly heartbeatTimeoutMs = 10000;
 
   constructor(url: string) {
     this.url = url;
@@ -80,12 +86,21 @@ class PulsarWebSocket {
       this.ws.onopen = () => {
         this.reconnectAttempts = 0;
         this.reconnectDelay = 3000; // reset backoff on successful connection
+        this.startHeartbeat();
         this.emit({ type: 'connected', data: {}, timestamp: Date.now() });
       };
 
       this.ws.onmessage = (event) => {
         try {
-          const result = PulsarEventSchema.safeParse(JSON.parse(event.data));
+          const parsed = JSON.parse(event.data);
+
+          if (parsed?.type === 'pong') {
+            this.clearHeartbeatTimeout();
+            this.emit({ type: 'pong', data: {}, timestamp: Date.now() });
+            return;
+          }
+
+          const result = PulsarEventSchema.safeParse(parsed);
           if (result.success) {
             this.emit(result.data as PulsarEvent);
           } else {
@@ -101,11 +116,46 @@ class PulsarWebSocket {
       };
 
       this.ws.onclose = () => {
+        this.stopHeartbeat();
+        this.emit({ type: 'disconnected', data: {}, timestamp: Date.now() });
         this.scheduleReconnect();
       };
     } catch {
+      this.stopHeartbeat();
       this.scheduleReconnect();
     }
+  }
+
+  private startHeartbeat(): void {
+    this.stopHeartbeat();
+
+    this.heartbeatInterval = setInterval(() => {
+      if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+        return;
+      }
+
+      this.ws.send(JSON.stringify({ type: 'ping' }));
+      this.clearHeartbeatTimeout();
+
+      this.heartbeatTimeout = setTimeout(() => {
+        this.ws?.close();
+      }, this.heartbeatTimeoutMs);
+    }, this.heartbeatIntervalMs);
+  }
+
+  private clearHeartbeatTimeout(): void {
+    if (this.heartbeatTimeout) {
+      clearTimeout(this.heartbeatTimeout);
+      this.heartbeatTimeout = null;
+    }
+  }
+
+  private stopHeartbeat(): void {
+    if (this.heartbeatInterval) {
+      clearInterval(this.heartbeatInterval);
+      this.heartbeatInterval = null;
+    }
+    this.clearHeartbeatTimeout();
   }
 
   private scheduleReconnect(): void {
@@ -128,6 +178,7 @@ class PulsarWebSocket {
     if (this.reconnectTimer) {
       clearTimeout(this.reconnectTimer);
     }
+    this.stopHeartbeat();
     this.ws?.close();
     this.ws = null;
   }
