@@ -22,10 +22,10 @@ interface Toast {
 
 interface ToastContextValue {
   toasts: Toast[];
-  success: (title: string, message?: string) => void;
-  error: (title: string, message?: string) => void;
-  warning: (title: string, message?: string) => void;
-  info: (title: string, message?: string) => void;
+  success: (title: string, message?: string, duration?: number) => void;
+  error: (title: string, message?: string, duration?: number) => void;
+  warning: (title: string, message?: string, duration?: number) => void;
+  info: (title: string, message?: string, duration?: number) => void;
   dismiss: (id: string) => void;
 }
 
@@ -60,6 +60,13 @@ const TOAST_ICONS: Record<ToastType, string> = {
   info: 'ℹ',
 };
 
+const DEFAULT_DURATIONS: Record<ToastType, number> = {
+  success: 3000,
+  info: 5000,
+  warning: 7000,
+  error: 10000,
+};
+
 function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: () => void }) {
   return (
     <div
@@ -90,22 +97,24 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, dispatch] = useReducer(reducer, []);
   const timersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
 
-  const addToast = useCallback((type: ToastType, title: string, message?: string) => {
+  const addToast = useCallback((type: ToastType, title: string, message?: string, duration?: number) => {
     const id = `${Date.now()}-${Math.random()}`;
     dispatch({ type: 'ADD', toast: { id, type, title, message } });
+
+    const timeout = duration ?? DEFAULT_DURATIONS[type];
 
     const timer = setTimeout(() => {
       dispatch({ type: 'REMOVE', id });
       timersRef.current.delete(id);
-    }, 5000);
+    }, timeout);
 
     timersRef.current.set(id, timer);
   }, []);
 
-  const success = useCallback((t: string, m?: string) => addToast('success', t, m), [addToast]);
-  const error = useCallback((t: string, m?: string) => addToast('error', t, m), [addToast]);
-  const warning = useCallback((t: string, m?: string) => addToast('warning', t, m), [addToast]);
-  const info = useCallback((t: string, m?: string) => addToast('info', t, m), [addToast]);
+  const success = useCallback((t: string, m?: string, d?: number) => addToast('success', t, m, d), [addToast]);
+  const error = useCallback((t: string, m?: string, d?: number) => addToast('error', t, m, d), [addToast]);
+  const warning = useCallback((t: string, m?: string, d?: number) => addToast('warning', t, m, d), [addToast]);
+  const info = useCallback((t: string, m?: string, d?: number) => addToast('info', t, m, d), [addToast]);
   const dismiss = useCallback((id: string) => {
     const timer = timersRef.current.get(id);
     if (timer) {

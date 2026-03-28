@@ -35,13 +35,19 @@ export function Header() {
   useEffect(() => {
     setMounted(true);
 
+    const check = async () => {
+      try {
+        await checkPendingTransactions();
+      } catch (err) {
+        console.error("Failed to check pending transactions:", err);
+      }
+    };
+
     // Check pending transactions on mount
-    checkPendingTransactions();
+    check();
 
     // Set up interval to check pending transactions periodically
-    const interval = setInterval(() => {
-      checkPendingTransactions();
-    }, 30000); // Check every 30 seconds
+    const interval = setInterval(check, 30000); // Check every 30 seconds
 
     return () => clearInterval(interval);
   }, []);

@@ -44,7 +44,7 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
       unsubscribeRefs.current.forEach((unsub) => unsub());
       unsubscribeRefs.current = [];
     };
-  }, [autoConnect]);
+  }, [autoConnect, JSON.stringify(events)]);
 
   const clearHistory = useCallback(() => {
     setEventHistory([]);
