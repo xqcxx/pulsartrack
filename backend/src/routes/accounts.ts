@@ -1,4 +1,5 @@
-import { Router, Request, Response } from 'express';
+import { Router, Request, Response, NextFunction } from 'express';
+import { Keypair } from '@stellar/stellar-sdk';
 import {
   getAccountDetails,
   getAccountTransactions,
@@ -6,8 +7,17 @@ import {
 
 const router = Router();
 
+function validateAddress(req: Request, res: Response, next: NextFunction): void {
+  try {
+    Keypair.fromPublicKey(req.params.address as string);
+    next();
+  } catch {
+    res.status(400).json({ error: 'Invalid Stellar address' });
+  }
+}
+
 // GET /api/account/:address
-router.get('/:address', async (req: Request, res: Response) => {
+router.get('/:address', validateAddress, async (req: Request, res: Response) => {
   try {
     const address = req.params.address as string;
     const account = await getAccountDetails(address);
@@ -27,10 +37,11 @@ router.get('/:address', async (req: Request, res: Response) => {
 });
 
 // GET /api/account/:address/transactions
-router.get('/:address/transactions', async (req: Request, res: Response) => {
+router.get('/:address/transactions', validateAddress, async (req: Request, res: Response) => {
   try {
     const address = req.params.address as string;
-    const limit = Math.min(parseInt(req.query.limit as string) || 20, 200);
+    const parsed = parseInt(req.query.limit as string);
+    const limit = Number.isNaN(parsed) ? 20 : Math.min(parsed, 200);
     const cursor = typeof req.query.cursor === 'string' ? req.query.cursor : undefined;
     const order = req.query.order === 'asc' ? 'asc' : 'desc';
 

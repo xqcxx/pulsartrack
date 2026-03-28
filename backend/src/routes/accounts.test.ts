@@ -11,8 +11,8 @@ vi.mock('../services/horizon', () => ({
 }));
 
 describe('GET /api/account/:address', () => {
-    // Valid 56-character Stellar address
-    const mockAddress = 'GA5W6GSR6G2CXP747U7S6ZPH5EALQY57V22K6YJSP2XYG47YJ3PGLRTI';
+    // Valid Stellar address (verified via Keypair.fromPublicKey)
+    const mockAddress = 'GA4LYCAMDLLOJPGXHQCHHPXBISH5RAWSS7ZTCSQAPKASBXG4NTB5MJ6N';
 
     beforeEach(() => {
         vi.clearAllMocks();
