@@ -89,3 +89,59 @@ fn test_get_deposit_nonexistent() {
     let (c, _) = setup(&env);
     assert!(c.get_deposit(&999u64).is_none());
 }
+#[test]
+#[should_panic(expected = "bridge fee calculation overflow")]
+fn test_deposit_for_bridge_overflow() {
+    let env = Env::default();
+    env.mock_all_auths();
+    let (c, admin) = setup(&env);
+    
+    let token_admin = Address::generate(&env);
+    let token_id = env.register_stellar_asset_contract(token_admin);
+    
+    // Support the chain
+    let chain = s(&env, "ethereum");
+    c.add_supported_chain(&admin, &chain, &i128::MAX);
+    
+    // Attempt deposit with MAX i128 should overflow when multiplied by fee_bps (default 50)
+    c.deposit_for_bridge(
+        &Address::generate(&env),
+        &token_id,
+        &i128::MAX,
+        &chain,
+        &s(&env, "0x123")
+    );
+}
+#[test]
+fn test_deposit_for_bridge_normal() {
+    let env = Env::default();
+    env.mock_all_auths();
+    let (c, admin) = setup(&env);
+    
+    let token_admin = Address::generate(&env);
+    let token_id = env.register_stellar_asset_contract(token_admin);
+    
+    let chain = s(&env, "ethereum");
+    c.add_supported_chain(&admin, &chain, &1_000_000i128);
+    
+    let amount = 10_000i128;
+    let sender = Address::generate(&env);
+    
+    // Mint tokens to sender (requires token_admin auth)
+    let token_stellar_client = token::StellarAssetClient::new(&env, &token_id);
+    token_stellar_client.mint(&sender, &amount);
+    
+    // fee_bps is 50 (0.5%), so fee should be 10,000 * 50 / 10,000 = 50
+    // net_amount should be 10,000 - 50 = 9,950
+    let deposit_id = c.deposit_for_bridge(
+        &sender,
+        &token_id,
+        &amount,
+        &chain,
+        &s(&env, "0x123")
+    );
+    
+    let deposit = c.get_deposit(&deposit_id).unwrap();
+    assert_eq!(deposit.amount, 9950);
+    assert_eq!(deposit.bridge_fee, 50);
+}

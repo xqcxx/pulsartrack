@@ -138,7 +138,10 @@ impl TokenBridgeContract {
             .instance()
             .get(&DataKey::BridgeFeesBps)
             .unwrap_or(50);
-        let bridge_fee = (amount * fee_bps as i128) / 10_000;
+        let bridge_fee = amount
+            .checked_mul(fee_bps as i128)
+            .expect("bridge fee calculation overflow")
+            / 10_000;
         let net_amount = amount - bridge_fee;
 
         // Lock tokens in bridge contract
