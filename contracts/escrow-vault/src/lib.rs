@@ -4,7 +4,7 @@
 //! Events:
 //! - ("escrow", "created"): [escrow_id: u64, campaign_id: u64, amount: i128]
 //! - ("escrow", "release"): [escrow_id: u64, amount: i128]
-//! - ("escrow", "release_partial"): [escrow_id: u64, amount: i128]
+//! - ("escrow", "release_p"): [escrow_id: u64, amount: i128]
 //! - ("escrow", "refund"): [escrow_id: u64, amount: i128]
 
 #![no_std]

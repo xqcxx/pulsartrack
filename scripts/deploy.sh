@@ -76,12 +76,36 @@ else
   echo "[Info] Dry run mode - skipping identity check/funding"
 fi
 
-# Stabilized deployment file
-DEPLOY_FILE="$OUTPUT_DIR/deployed-$NETWORK.json"
+# Stabilized deployment file (avoid writing records during dry-run)
 mkdir -p "$OUTPUT_DIR"
-
-if [ ! -f "$DEPLOY_FILE" ]; then
+if [ "$DRY_RUN" = true ]; then
+  DEPLOY_FILE="$(mktemp -t "pulsartrack-deployed-$NETWORK.XXXXXX.json")"
   echo '{"network": "'"$NETWORK"'", "deployer": "'"$DEPLOYER_ADDRESS"'", "contracts": {}}' > "$DEPLOY_FILE"
+  echo "[Info] Dry run mode - not writing deployment record to $OUTPUT_DIR"
+else
+  DEPLOY_FILE="$OUTPUT_DIR/deployed-$NETWORK.json"
+  if [ ! -f "$DEPLOY_FILE" ]; then
+    echo '{"network": "'"$NETWORK"'", "deployer": "'"$DEPLOYER_ADDRESS"'", "contracts": {}}' > "$DEPLOY_FILE"
+  fi
+
+  # Ensure we never persist the dry-run placeholder as a deployer address
+  python3 -c '
+import json
+import sys
+
+deploy_file, deployer = sys.argv[1], sys.argv[2]
+with open(deploy_file, encoding="utf-8") as f:
+    data = json.load(f)
+
+if data.get("deployer") == "DRY_RUN_ADDRESS":
+    raise SystemExit("Deployment file has DRY_RUN_ADDRESS as deployer; aborting. Update the record or re-deploy without --dry-run.")
+
+if not data.get("deployer"):
+    data["deployer"] = deployer
+    with open(deploy_file, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2)
+        f.write("\n")
+' "$DEPLOY_FILE" "$DEPLOYER_ADDRESS"
 fi
 
 # Build all contracts (unless already built or dry run)
@@ -209,8 +233,12 @@ deploy_contract "dispute_resolution"    "pulsar_dispute_resolution"
 deploy_contract "budget_optimizer"      "pulsar_budget_optimizer"
 deploy_contract "anomaly_detector"      "pulsar_anomaly_detector"
 
-echo ""
-echo "=============================================="
-echo "  Deployment complete!"
-echo "  Results saved to: $DEPLOY_FILE"
-echo "=============================================="
+	echo ""
+	echo "=============================================="
+	echo "  Deployment complete!"
+	if [ "$DRY_RUN" = true ]; then
+	  echo "  Dry run complete (no deployment record written)"
+	else
+	  echo "  Results saved to: $DEPLOY_FILE"
+	fi
+	echo "=============================================="

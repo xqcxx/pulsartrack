@@ -2,7 +2,7 @@ import { Router, Request, Response } from "express";
 import pool from "../config/database";
 import { callReadOnly, toAddressScVal } from "../services/soroban-client";
 import { CONTRACT_IDS } from "../config/stellar";
-import { requireAuth } from "../middleware/auth";
+import { requireAuth, rateLimitWrite } from "../middleware/auth";
 import { validate } from "../middleware/validate";
 
 const router = Router();
@@ -70,12 +70,13 @@ router.get(
 );
 
 router.post(
-  "/register",
-  requireAuth,
-  validate({
-    body: {
-      displayName: {
-        type: "string",
+	"/register",
+	requireAuth,
+	rateLimitWrite(),
+	validate({
+	  body: {
+	    displayName: {
+	      type: "string",
         required: true,
         minLength: 1,
         maxLength: 100,

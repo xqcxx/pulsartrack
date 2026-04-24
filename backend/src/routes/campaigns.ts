@@ -2,7 +2,7 @@ import { Router, Request, Response } from 'express';
 import pool from '../config/database';
 import { callReadOnly } from '../services/soroban-client';
 import { CONTRACT_IDS } from '../config/stellar';
-import { requireAuth } from '../middleware/auth';
+import { requireAuth, rateLimitWrite } from '../middleware/auth';
 import { validate } from '../middleware/validate';
 
 const router = Router();
@@ -47,7 +47,7 @@ router.get('/stats', async (_req: Request, res: Response) => {
   }
 });
 
-router.post('/', requireAuth, validate({
+router.post('/', requireAuth, rateLimitWrite(), validate({
   body: {
     title: { type: 'string', required: true, minLength: 1, maxLength: 200 },
     contentId: { type: 'string', required: true, minLength: 1 },

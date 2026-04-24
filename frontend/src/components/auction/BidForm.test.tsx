@@ -36,7 +36,7 @@ describe('BidForm', () => {
 
     it('should render floor price correctly', () => {
         render(<BidForm auction={mockAuction} />);
-        expect(screen.getByText('1 XLM')).toBeDefined();
+        expect(screen.getByText('1 XLM')).toBeInTheDocument();
     });
 
     it('should show error if bid is below floor price', async () => {
