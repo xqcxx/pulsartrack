@@ -93,7 +93,7 @@ router.get(
       const rawLimit = parseInt(req.query.limit as string);
       const limit = Math.min(Math.max(isNaN(rawLimit) ? 20 : rawLimit, 1), 200);
       const txs = await getAccountTransactions(address as string, limit);
-      res.json({ transactions: txs, count: txs.length });
+      res.json({ transactions: txs.records, count: txs.records.length });
     } catch (err: any) {
       req.log?.error({ err }, "Failed to fetch account transactions");
       const details =

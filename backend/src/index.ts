@@ -82,6 +82,49 @@ const server = createServer(app);
 // Attach WebSocket server
 setupWebSocketServer(server);
 
+async function closeResources() {
+  try {
+    await prisma.$disconnect();
+    logger.info("[PulsarTrack] Prisma disconnected");
+  } catch (err) {
+    logger.error({ err }, "[PulsarTrack] Prisma disconnect error");
+  }
+
+  try {
+    await pool.end();
+    logger.info("[PulsarTrack] PostgreSQL pool closed");
+  } catch (err) {
+    logger.error({ err }, "[PulsarTrack] PostgreSQL disconnect error");
+  }
+
+  try {
+    if (redisClient.status !== "end") {
+      await redisClient.quit();
+      logger.info("[PulsarTrack] Redis disconnected");
+    }
+  } catch (err) {
+    logger.error({ err }, "[PulsarTrack] Redis disconnect error");
+  }
+}
+
+async function shutdown(exitCode: number, closeServer = false) {
+  if (closeServer && server.listening) {
+    await new Promise<void>((resolve, reject) => {
+      server.close((err) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+        logger.info("[PulsarTrack] HTTP server closed");
+        resolve();
+      });
+    });
+  }
+
+  await closeResources();
+  return exitCode;
+}
+
 async function gracefulShutdown(signal: string) {
   logger.info(`[PulsarTrack] Received ${signal}, shutting down gracefully...`);
 
@@ -91,33 +134,15 @@ async function gracefulShutdown(signal: string) {
     process.exit(1);
   }, 10000);
 
-  server.close(async () => {
-    logger.info("[PulsarTrack] HTTP server closed");
-
-    try {
-      await prisma.$disconnect();
-      logger.info("[PulsarTrack] Prisma disconnected");
-    } catch (err) {
-      logger.error({ err }, "[PulsarTrack] Prisma disconnect error");
-    }
-
-    try {
-      await pool.end();
-      logger.info("[PulsarTrack] PostgreSQL pool closed");
-    } catch (err) {
-      logger.error({ err }, "[PulsarTrack] PostgreSQL disconnect error");
-    }
-
-    try {
-      await redisClient.quit();
-      logger.info("[PulsarTrack] Redis disconnected");
-    } catch (err) {
-      logger.error({ err }, "[PulsarTrack] Redis disconnect error");
-    }
-
+  try {
+    const exitCode = await shutdown(0, true);
     clearTimeout(forceShutdownTimer);
-    process.exit(0);
-  });
+    process.exit(exitCode);
+  } catch (err) {
+    clearTimeout(forceShutdownTimer);
+    logger.error({ err }, "[PulsarTrack] Graceful shutdown failed");
+    process.exit(1);
+  }
 }
 
 // Ensure the application shuts down gracefully on OS signals
@@ -170,7 +195,8 @@ async function start() {
 if (process.env.NODE_ENV !== "test") {
   start().catch(async (err) => {
     console.error("Failed to start server:", err);
-    await shutdown(1);
+    const exitCode = await shutdown(1);
+    process.exit(exitCode);
   });
 }
 
