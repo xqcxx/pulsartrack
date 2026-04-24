@@ -92,7 +92,7 @@ call_contract() {
 }
 
 read_contract() {
-  python3 -c '
+  python3 - "$DEPLOY_FILE" "$1" <<'PY' 2>/dev/null
 import json
 import sys
 
@@ -100,7 +100,7 @@ deploy_file, name = sys.argv[1], sys.argv[2]
 with open(deploy_file, encoding="utf-8") as f:
     data = json.load(f)
 print(data["contracts"].get(name, ""))
-' "$DEPLOY_FILE" "$1" 2>/dev/null
+PY
 }
 
 echo ""

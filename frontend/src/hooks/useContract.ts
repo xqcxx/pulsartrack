@@ -111,6 +111,32 @@ export function useCampaignCount(enabled = true) {
   );
 }
 
+export interface AdvertiserCampaign {
+  id: number;
+  advertiser?: string;
+  budget?: bigint | number;
+  target_views?: bigint | number;
+  current_views?: bigint | number;
+  status?: Record<string, unknown> | string;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+function toBigintOrNumber(value: unknown): bigint | number | undefined {
+  if (typeof value === "bigint" || typeof value === "number") return value;
+  return undefined;
+}
+
+function normalizeStatus(
+  value: unknown,
+): Record<string, unknown> | string | undefined {
+  if (typeof value === "string") return value;
+  if (isRecord(value)) return value;
+  return undefined;
+}
+
 /**
  * Hook to get all campaigns for an advertiser
  */
@@ -119,11 +145,11 @@ export function useAdvertiserCampaigns(
   campaignCount: number | undefined,
   enabled = true,
 ) {
-  return useQuery({
+  return useQuery<AdvertiserCampaign[]>({
     queryKey: ["advertiser_campaigns", advertiserAddress, campaignCount],
     queryFn: async () => {
       if (!campaignCount) return [];
-      const campaigns: any[] = [];
+      const campaigns: AdvertiserCampaign[] = [];
       // Fetch concurrently for better performance
       const promises = [];
       for (let i = 1; i <= campaignCount; i++) {
@@ -134,9 +160,22 @@ export function useAdvertiserCampaigns(
             args: [u64ToScVal(i)],
           })
             .then((campaign) => {
-              if (campaign && campaign.advertiser === advertiserAddress) {
-                campaigns.push({ id: i, ...campaign });
-              }
+              if (!isRecord(campaign)) return;
+
+              const advertiser =
+                typeof campaign.advertiser === "string"
+                  ? campaign.advertiser
+                  : undefined;
+              if (!advertiser || advertiser !== advertiserAddress) return;
+
+              campaigns.push({
+                id: i,
+                advertiser,
+                budget: toBigintOrNumber(campaign.budget),
+                target_views: toBigintOrNumber(campaign.target_views),
+                current_views: toBigintOrNumber(campaign.current_views),
+                status: normalizeStatus(campaign.status),
+              });
             })
             .catch((err) => {
               console.error(`Failed to fetch campaign ${i}:`, err);

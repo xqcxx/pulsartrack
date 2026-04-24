@@ -124,7 +124,7 @@ deploy_contract() {
   # Check if already deployed
   local EXISTING_ID
   EXISTING_ID=$(
-    python3 -c '
+    python3 - "$DEPLOY_FILE" "$NAME" <<'PY' 2>/dev/null || echo ""
 import json
 import sys
 
@@ -132,7 +132,7 @@ deploy_file, name = sys.argv[1], sys.argv[2]
 with open(deploy_file, encoding="utf-8") as f:
     data = json.load(f)
 print(data["contracts"].get(name, ""))
-' "$DEPLOY_FILE" "$NAME" 2>/dev/null || echo ""
+PY
   )
 
   if [ -n "$EXISTING_ID" ] && [ "$FORCE" = false ]; then
@@ -164,7 +164,7 @@ print(data["contracts"].get(name, ""))
   echo "  -> $CONTRACT_ID"
 
   # Update deploy file
-  python3 -c '
+  python3 - "$NAME" "$CONTRACT_ID" "$DEPLOY_FILE" <<'PY'
 import json
 import sys
 
@@ -175,7 +175,7 @@ data["contracts"][name] = contract_id
 with open(deploy_file, "w", encoding="utf-8") as f:
     json.dump(data, f, indent=2)
     f.write("\n")
-' "$NAME" "$CONTRACT_ID" "$DEPLOY_FILE"
+PY
 }
 
 # Core contracts

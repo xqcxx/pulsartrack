@@ -4,7 +4,13 @@ import { useState } from 'react';
 import { PlusCircle, BarChart3, Settings, DollarSign, TrendingUp, Eye, MousePointer } from 'lucide-react';
 import { useWalletStore } from '@/store/wallet-store';
 import { WalletConnectButton } from '@/components/wallet/WalletModal';
-import { useCreateCampaign, useCampaignCount, useAdvertiserCampaigns, useAdvertiserStats } from '@/hooks/useContract';
+import {
+  useCreateCampaign,
+  useCampaignCount,
+  useAdvertiserCampaigns,
+  useAdvertiserStats,
+  AdvertiserCampaign,
+} from '@/hooks/useContract';
 import { formatXlm, formatNumber } from '@/lib/display-utils';
 
 interface CampaignForm {
@@ -202,7 +208,7 @@ export default function AdvertiserPage() {
                 </div>
               ) : campaigns && campaigns.length > 0 ? (
                 <div className="space-y-4">
-                  {campaigns.map((camp: any) => (
+                  {campaigns.map((camp: AdvertiserCampaign) => (
                     <div
                       key={camp.id}
                       className="p-4 border border-gray-200 rounded-lg flex justify-between items-center"
@@ -211,14 +217,26 @@ export default function AdvertiserPage() {
                         <h3 className="font-semibold">Campaign #{camp.id}</h3>
                         <p className="text-sm text-gray-500">
                           Status:{" "}
-                          {Object.keys(camp.status || {})[0] || "Unknown"}
+                          {typeof camp.status === "string"
+                            ? camp.status
+                            : Object.keys(camp.status || {})[0] || "Unknown"}
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className="font-medium">{formatXlm(camp.budget)}</p>
+                        <p className="font-medium">
+                          {camp.budget !== undefined
+                            ? formatXlm(camp.budget)
+                            : "—"}
+                        </p>
                         <p className="text-xs text-gray-500">
-                          {camp.current_views?.toString() || 0} /{" "}
-                          {camp.target_views?.toString() || 0} Views
+                          {camp.current_views !== undefined
+                            ? formatNumber(camp.current_views)
+                            : 0}{" "}
+                          /{" "}
+                          {camp.target_views !== undefined
+                            ? formatNumber(camp.target_views)
+                            : 0}{" "}
+                          Views
                         </p>
                       </div>
                     </div>
