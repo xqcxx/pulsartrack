@@ -43,9 +43,7 @@ describe('Publisher Routes', () => {
                 website: 'https://newpub.com'
             };
 
-            // Duplicate check, then insert
             (pool.query as any)
-                .mockResolvedValueOnce({ rows: [] })
                 .mockResolvedValueOnce({
                     rows: [{
                         id: 'pub-uuid',
@@ -74,7 +72,7 @@ describe('Publisher Routes', () => {
 
         it('should return 409 when publisher already registered', async () => {
             (pool.query as any).mockResolvedValueOnce({
-                rows: [{ id: 'existing-uuid' }]
+                rows: []
             });
 
             const response = await request(app)
