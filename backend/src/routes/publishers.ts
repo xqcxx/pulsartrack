@@ -68,17 +68,17 @@ router.post('/register', requireAuth, validate({
     const address = req.stellarAddress;
     const { displayName, website } = req.body;
 
-    // Check if the address is already registered
-    const existing = await pool.query('SELECT id FROM publishers WHERE address = $1', [address]);
-    if (existing.rows.length > 0) {
-      return res.status(409).json({ error: 'Publisher already registered' });
-    }
-
     const { rows } = await pool.query(
       `INSERT INTO publishers (address, display_name, website)
-       VALUES ($1, $2, $3) RETURNING *`,
+       VALUES ($1, $2, $3)
+       ON CONFLICT (address) DO NOTHING
+       RETURNING *`,
       [address, displayName, website]
     );
+
+    if (rows.length === 0) {
+      return res.status(409).json({ error: 'Publisher already registered' });
+    }
 
     res.status(201).json(rows[0]);
   } catch (err: any) {

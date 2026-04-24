@@ -28,7 +28,7 @@ export function AnalyticsDashboard({
 
   const rawCpm =
     totalImpressions > 0n
-      ? (Number(totalSpent) / Number(totalImpressions)) / 10000
+      ? (Number(totalSpent) / 1e7 / Number(totalImpressions)) * 1000
       : 0;
   const cpm = Number.isFinite(rawCpm) ? rawCpm.toFixed(4) : "0.0000";
 

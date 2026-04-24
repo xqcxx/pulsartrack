@@ -50,7 +50,7 @@ export const useWalletStore = create<WalletStore>()(
 
           set({
             address: addr,
-            isConnected: !!addr,
+            isConnected: !!addr && isNetworkCorrect,
             freighterNetwork: freighterLabel,
             networkMismatch: !isNetworkCorrect && !!connected,
           });
